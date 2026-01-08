@@ -16,6 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\ActivityGuard.Application\ActivityGuard.Application.csproj" />
     <ProjectReference Include="..\ActivityGuard.Domain\ActivityGuard.Domain.csproj" />
   </ItemGroup>
 
