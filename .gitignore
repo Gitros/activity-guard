@@ -1,0 +1,82 @@
+########################################
+# OS
+########################################
+.DS_Store
+Thumbs.db
+
+########################################
+# Visual Studio / Rider / VS Code
+########################################
+.vs/
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+!.vscode/launch.json
+!.vscode/tasks.json
+
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+########################################
+# .NET / C#
+########################################
+bin/
+obj/
+*.dll
+*.exe
+*.pdb
+*.cache
+
+# dotnet tools
+.dotnet/
+
+# EF Core
+**/Migrations/*.cs
+!**/Migrations/*Initial*.cs
+
+########################################
+# Logs
+########################################
+logs/
+*.log
+
+########################################
+# Node / Frontend (Vite / React / Tailwind)
+########################################
+node_modules/
+dist/
+dist-ssr/
+.vite/
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+########################################
+# Environment variables
+########################################
+.env
+.env.*
+!.env.example
+
+########################################
+# Docker
+########################################
+docker-data/
+**/*.env
+
+########################################
+# Coverage / Tests
+########################################
+coverage/
+TestResults/
+
+########################################
+# Temporary / Cache
+########################################
+tmp/
+temp/
+.cache/
