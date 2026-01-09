@@ -1,5 +1,6 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using ActivityGuard.Application.Audit;
 using ActivityGuard.Application.Auth;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace ActivityGuard.Application;
 
@@ -8,6 +9,7 @@ public static class DependencyInjection
     public static IServiceCollection AddApplication(this IServiceCollection services)
     {
         services.AddScoped<AuthService>();
+        services.AddScoped<AuditService>();
         return services;
     }
 }

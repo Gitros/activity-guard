@@ -37,17 +37,21 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization();
 
-var app = builder.Build();
+builder.Services.AddScoped<ActivityGuard.Api.Middleware.AuditMiddleware>();
 
-app.MapGet("/env", () => Results.Ok(new { env = app.Environment.EnvironmentName }));
+
+var app = builder.Build();
 
 app.UseSwagger();
     app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
 
+app.UseMiddleware<ActivityGuard.Api.Middleware.AuditMiddleware>();
+
 app.UseAuthentication();
 app.UseAuthorization();
+
 
 app.MapControllers();
 
