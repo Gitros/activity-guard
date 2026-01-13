@@ -40,6 +40,14 @@ builder.Services.AddAuthorization();
 builder.Services.AddScoped<ActivityGuard.Api.Middleware.ExceptionHandlingMiddleware>();
 builder.Services.AddScoped<ActivityGuard.Api.Middleware.AuditMiddleware>();
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("ui", p =>
+        p.WithOrigins("http://localhost:5173")
+         .AllowAnyHeader()
+         .AllowAnyMethod());
+});
+
 
 var app = builder.Build();
 
@@ -47,6 +55,8 @@ app.UseSwagger();
     app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
+
+app.UseCors("ui");
 
 app.UseMiddleware<ActivityGuard.Api.Middleware.ExceptionHandlingMiddleware>();
 app.UseMiddleware<ActivityGuard.Api.Middleware.AuditMiddleware>();
