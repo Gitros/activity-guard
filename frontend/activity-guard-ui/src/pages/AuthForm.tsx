@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { login, register } from "../auth/auth.api";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../auth/useAuth";
 
 type AuthMode = "login" | "register";
 
@@ -17,6 +19,9 @@ const AuthForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const navigate = useNavigate();
+  const auth = useAuth();
+
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
@@ -30,9 +35,8 @@ const AuthForm = () => {
         setPassword("");
       } else {
         const res = await login({ email, password });
-        localStorage.setItem("ag_token", res.token);
-        // na razie tylko info; potem przekierujemy do audit logs
-        window.location.href = "/";
+        auth.login(res.token);
+        navigate("/audit-logs", { replace: true });
       }
     } catch (err) {
       const e = err as ApiError;
