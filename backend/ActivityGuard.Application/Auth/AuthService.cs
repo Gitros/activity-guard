@@ -1,4 +1,5 @@
 ﻿using ActivityGuard.Application.Auth.Dtos;
+using ActivityGuard.Application.Common.Errors;
 using ActivityGuard.Application.Common.Interfaces;
 using ActivityGuard.Domain;
 
@@ -28,7 +29,7 @@ public sealed class AuthService
             throw new ArgumentException("Password is required.");
 
         if (await _users.EmailExistsAsync(email, ct))
-            throw new InvalidOperationException("Email already exists.");
+            throw new ConflictException("Email already exists.");
 
         var hash = _hasher.Hash(request.Password);
 
@@ -44,10 +45,10 @@ public sealed class AuthService
 
         var user = await _users.GetByEmailAsync(email, ct);
         if (user is null)
-            throw new InvalidOperationException("Invalid credentials.");
+            throw new UnauthorizedAccessException("Invalid credentials.");
 
         if (!_hasher.Verify(request.Password, user.PasswordHash))
-            throw new InvalidOperationException("Invalid credentials.");
+            throw new UnauthorizedAccessException("Invalid credentials.");
 
         var token = _jwt.Generate(user);
         return new AuthResponse(token);

@@ -37,6 +37,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization();
 
+builder.Services.AddScoped<ActivityGuard.Api.Middleware.ExceptionHandlingMiddleware>();
 builder.Services.AddScoped<ActivityGuard.Api.Middleware.AuditMiddleware>();
 
 
@@ -47,6 +48,7 @@ app.UseSwagger();
 
 app.UseHttpsRedirection();
 
+app.UseMiddleware<ActivityGuard.Api.Middleware.ExceptionHandlingMiddleware>();
 app.UseMiddleware<ActivityGuard.Api.Middleware.AuditMiddleware>();
 
 app.UseAuthentication();
