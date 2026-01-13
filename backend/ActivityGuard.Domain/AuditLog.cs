@@ -15,6 +15,12 @@ public class AuditLog
     public string CorrelationId { get; private set; } = null!;
     public DateTimeOffset CreatedAt { get; private set; }
 
+    public void SetResult(int statusCode, bool success)
+    {
+        StatusCode = statusCode;
+        Success = success;
+    }
+
     private AuditLog() { }
 
     public AuditLog(

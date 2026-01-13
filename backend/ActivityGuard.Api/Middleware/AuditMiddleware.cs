@@ -1,6 +1,6 @@
 ﻿using System.Security.Claims;
-using ActivityGuard.Domain;
 using ActivityGuard.Application.Common.Interfaces;
+using ActivityGuard.Domain;
 using Microsoft.AspNetCore.Http;
 using Microsoft.IdentityModel.JsonWebTokens;
 
@@ -20,19 +20,45 @@ public sealed class AuditMiddleware : IMiddleware
         }
 
         // CorrelationId (z nagłówka albo generujemy)
-        var correlationId = context.Request.Headers.TryGetValue("X-Correlation-Id", out var cid) && !string.IsNullOrWhiteSpace(cid)
-            ? cid.ToString()
-            : Guid.NewGuid().ToString("N");
+        var correlationId =
+            context.Request.Headers.TryGetValue("X-Correlation-Id", out var cid) &&
+            !string.IsNullOrWhiteSpace(cid)
+                ? cid.ToString()
+                : Guid.NewGuid().ToString("N");
 
         context.Response.Headers["X-Correlation-Id"] = correlationId;
 
         int statusCode = 0;
         bool success = false;
 
+        var userId = TryGetUserId(context.User);
+        var userEmail = TryGetEmail(context.User);
+
+        var action = $"{context.Request.Method} {path}";
+        var ip = context.Connection.RemoteIpAddress?.ToString();
+        var ua = context.Request.Headers.UserAgent.ToString();
+
+        // ✅ TWORZYSZ LOG RAZ
+        var auditLog = new AuditLog(
+            userId: userId,
+            userEmail: userEmail,
+            action: action,
+            path: path,
+            method: context.Request.Method,
+            statusCode: 0,      // tymczasowe
+            success: false,     // tymczasowe
+            ipAddress: ip,
+            userAgent: ua,
+            correlationId: correlationId
+        );
+
+        // ✅ DOPIERO TERAZ UDOSTĘPNIASZ ID
+        context.Items["AuditLogId"] = auditLog.Id;
+        context.Items["CorrelationId"] = auditLog.CorrelationId;
+
         try
         {
             await next(context);
-
             statusCode = context.Response.StatusCode;
             success = statusCode < 400;
         }
@@ -44,39 +70,18 @@ public sealed class AuditMiddleware : IMiddleware
         }
         finally
         {
-            var userId = TryGetUserId(context.User);
-            var userEmail = TryGetEmail(context.User);
+            auditLog.SetResult(statusCode, success);
 
-            var action = $"{context.Request.Method} {path}";
-
-            var ip = context.Connection.RemoteIpAddress?.ToString();
-            var ua = context.Request.Headers.UserAgent.ToString();
-
-            // zapis do DB przez repo
             var repo = context.RequestServices.GetRequiredService<IAuditLogRepository>();
-
-            var log = new AuditLog(
-                userId: userId,
-                userEmail: userEmail,
-                action: action,
-                path: path,
-                method: context.Request.Method,
-                statusCode: statusCode,
-                success: success,
-                ipAddress: ip,
-                userAgent: ua,
-                correlationId: correlationId
-            );
 
             try
             {
-                await repo.AddAsync(log);
+                await repo.AddAsync(auditLog);
                 await repo.SaveChangesAsync();
             }
             catch
             {
-                // audyt nie powinien wywracać requestu
-                // (opcjonalnie: zalogować do loggera)
+                // audyt nie może wywalić requestu
             }
         }
     }

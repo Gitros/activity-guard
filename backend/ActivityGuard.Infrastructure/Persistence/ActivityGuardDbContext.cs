@@ -10,6 +10,8 @@ public class ActivityGuardDbContext : DbContext
 
     public DbSet<User> Users => Set<User>();
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
+    public DbSet<AuditEvent> AuditEvents => Set<AuditEvent>();
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

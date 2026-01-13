@@ -20,6 +20,7 @@ public static class DependencyInjection
         // Repositories
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IAuditLogRepository, AuditLogRepository>();
+        services.AddScoped<IAuditEventRepository, AuditEventRepository>();
 
         // Security
         services.Configure<JwtOptions>(configuration.GetSection("Jwt"));
