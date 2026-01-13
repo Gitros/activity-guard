@@ -1,3 +1,5 @@
+import { clearToken, getToken } from "../auth/token";
+
 const BASE_URL = import.meta.env.VITE_API_BASE_URL as string;
 
 type ApiError = {
@@ -10,7 +12,7 @@ export async function apiFetch<T>(
   path: string,
   options: RequestInit = {}
 ): Promise<T> {
-  const token = localStorage.getItem("ag_token");
+  const token = getToken();
 
   const headers = new Headers(options.headers);
   if (!headers.has("Content-Type") && options.body) {
@@ -20,13 +22,13 @@ export async function apiFetch<T>(
     headers.set("Authorization", `Bearer ${token}`);
   }
 
-  const res = await fetch(`${BASE_URL}${path}`, {
-    ...options,
-    headers,
-  });
+  const res = await fetch(`${BASE_URL}${path}`, { ...options, headers });
+
+  if (res.status === 401) {
+    clearToken();
+  }
 
   if (!res.ok) {
-    // próbujemy odczytać ProblemDetails
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let body: any = null;
     try {
@@ -44,7 +46,6 @@ export async function apiFetch<T>(
     throw err;
   }
 
-  // 204 / puste
   if (res.status === 204) return undefined as T;
 
   const text = await res.text();
