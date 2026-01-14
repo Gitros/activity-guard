@@ -3,25 +3,17 @@
 public class AuditEvent
 {
     public Guid Id { get; private set; }
-
-    // FK -> AuditLog
     public Guid AuditLogId { get; private set; }
-
     public Guid? UserId { get; private set; }
     public string? UserEmail { get; private set; }
-
     public string EventType { get; private set; } = null!;
-
-    // opcjonalnie: na czym wykonano akcję
     public string? TargetType { get; private set; }
     public string? TargetId { get; private set; }
-
-    // opcjonalnie: szczegóły, np. JSON
     public string? MetadataJson { get; private set; }
 
     public DateTimeOffset CreatedAt { get; private set; }
 
-    private AuditEvent() { } // EF
+    private AuditEvent() { }
 
     public AuditEvent(
         Guid auditLogId,

@@ -1,29 +1,31 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/useAuth";
-import { getAuditLogs, type AuditLogDto } from "../audit/audit.api";
+import {
+  getAuditEvents,
+  type AuditEventDto,
+} from "../auditEvents/auditEvents.api";
+import AdminPageLayout from "../components/AdminPageLayout";
+import AuditEventFilters from "../auditEvents/components/AuditEventFilters";
+import AuditEventTable from "../auditEvents/components/AuditEventTable";
+import AuditEventDetailsPanel from "../auditEvents/components/AuditEventDetailsPanel";
 import { formatDate, short } from "../audit/utils";
 import { copyToClipboard } from "../lib/clipboard";
-import AuditFilters from "../audit/components/AuditFilters";
-import AuditTable from "../audit/components/AuditTable";
-import AuditDetailsPanel from "../audit/components/AuditDetailsPanel";
-import AdminPageLayout from "../components/AdminPageLayout";
 
 type ApiError = { status: number; title?: string; detail?: string };
 
-export default function AuditLogsPage() {
-  const [searchParams] = useSearchParams();
-
+export default function AuditEventsPage() {
   const { logout } = useAuth();
   const navigate = useNavigate();
 
-  const [logs, setLogs] = useState<AuditLogDto[]>([]);
-  const [q, setQ] = useState(() => searchParams.get("q") ?? "");
+  const [events, setEvents] = useState<AuditEventDto[]>([]);
+  const [q, setQ] = useState("");
+  const [eventType, setEventType] = useState("");
   const [success, setSuccess] = useState<"all" | "true" | "false">("all");
 
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selected, setSelected] = useState<AuditLogDto | null>(null);
+  const [selected, setSelected] = useState<AuditEventDto | null>(null);
 
   const successParam = useMemo(() => {
     if (success === "all") return undefined;
@@ -35,12 +37,14 @@ export default function AuditLogsPage() {
     setError(null);
 
     try {
-      const data = await getAuditLogs({
+      const data = await getAuditEvents({
         q: q.trim() || undefined,
+        eventType: eventType.trim() || undefined,
         success: successParam,
-        take: 100,
+        take: 200,
       });
-      setLogs(data);
+
+      setEvents(data);
       setSelected((prev) => {
         if (!prev) return data[0] ?? null;
         const stillThere = data.find((x) => x.id === prev.id);
@@ -70,23 +74,25 @@ export default function AuditLogsPage() {
   }, []);
 
   return (
-    <AdminPageLayout title="Audit Logs" onRefresh={load}>
-      <AuditFilters
+    <AdminPageLayout title="Audit Events" onRefresh={load}>
+      <AuditEventFilters
         q={q}
         onQChange={setQ}
+        eventType={eventType}
+        onEventTypeChange={setEventType}
         success={success}
         onSuccessChange={setSuccess}
         onApply={load}
         onReset={() => {
           setQ("");
+          setEventType("");
           setSuccess("all");
         }}
       />
 
-      {/* Content */}
       <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_360px]">
-        <AuditTable
-          logs={logs}
+        <AuditEventTable
+          events={events}
           selectedId={selected?.id ?? null}
           isLoading={isLoading}
           error={error}
@@ -94,15 +100,14 @@ export default function AuditLogsPage() {
           formatDate={formatDate}
         />
 
-        {/* DETAILS PANEL */}
-        <AuditDetailsPanel
+        <AuditEventDetailsPanel
           selected={selected}
           onClear={() => setSelected(null)}
           formatDate={formatDate}
           short={short}
           copyToClipboard={copyToClipboard}
-          onOpenRelatedEvents={(q) =>
-            navigate(`/audit-events?q=${encodeURIComponent(q)}`)
+          onOpenRelatedLog={(q) =>
+            navigate(`/audit-logs?q=${encodeURIComponent(q)}`)
           }
         />
       </div>

@@ -7,6 +7,8 @@ type Props = {
   formatDate: (iso: string) => string;
   short: (text: string | null | undefined, max?: number) => string;
   copyToClipboard: (text: string) => Promise<void>;
+
+  onOpenRelatedEvents: (q: string) => void;
 };
 
 function DetailRow({
@@ -34,6 +36,7 @@ export default function AuditDetailsPanel({
   formatDate,
   short,
   copyToClipboard,
+  onOpenRelatedEvents,
 }: Props) {
   return (
     <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-5 lg:sticky lg:top-6 h-fit">
@@ -84,6 +87,18 @@ export default function AuditDetailsPanel({
                   Copy
                 </button>
               </div>
+            </div>
+
+            <div className="mt-4">
+              <button
+                onClick={() => {
+                  const q = selected.correlationId?.trim() || selected.id;
+                  onOpenRelatedEvents(q);
+                }}
+                className="w-full rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-zinc-950 hover:bg-emerald-500 transition cursor-pointer"
+              >
+                Open events for this request
+              </button>
             </div>
 
             <DetailRow label="IP" value={selected.ipAddress ?? "—"} />

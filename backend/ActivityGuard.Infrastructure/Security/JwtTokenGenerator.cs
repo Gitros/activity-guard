@@ -23,7 +23,8 @@ public sealed class JwtTokenGenerator : IJwtTokenGenerator
         {
             new(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
             new(JwtRegisteredClaimNames.Email, user.Email),
-            new(ClaimTypes.Role, user.Role.ToString())
+            new(ClaimTypes.Role, user.Role.ToString()),
+            new(ClaimTypes.Name, user.Email)
         };
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_options.Key));

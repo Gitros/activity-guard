@@ -18,6 +18,9 @@ export async function apiFetch<T>(
   if (!headers.has("Content-Type") && options.body) {
     headers.set("Content-Type", "application/json");
   }
+  if (!headers.has("X-Correlation-Id")) {
+    headers.set("X-Correlation-Id", crypto.randomUUID().replaceAll("-", ""));
+  }
   if (token) {
     headers.set("Authorization", `Bearer ${token}`);
   }
@@ -50,4 +53,16 @@ export async function apiFetch<T>(
 
   const text = await res.text();
   return (text ? JSON.parse(text) : undefined) as T;
+}
+
+export async function apiPost<T>(
+  path: string,
+  body?: unknown,
+  options: RequestInit = {}
+): Promise<T> {
+  return apiFetch<T>(path, {
+    method: "POST",
+    body: body !== undefined ? JSON.stringify(body) : undefined,
+    ...options,
+  });
 }

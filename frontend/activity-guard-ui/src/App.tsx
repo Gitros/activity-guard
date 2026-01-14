@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import ProtectedRoute from "./auth/ProtectedRoute";
 import LoginPage from "./pages/LoginPage";
 import AuditLogsPage from "./pages/AuditLogsPage";
+import AuditEventsPage from "./pages/AuditEventsPage";
 
 export default function App() {
   return (
@@ -11,6 +12,7 @@ export default function App() {
       {/* protected */}
       <Route element={<ProtectedRoute />}>
         <Route path="/audit-logs" element={<AuditLogsPage />} />
+        <Route path="/audit-events" element={<AuditEventsPage />} />
       </Route>
 
       {/* default */}

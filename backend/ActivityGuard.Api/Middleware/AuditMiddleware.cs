@@ -10,7 +10,6 @@ public sealed class AuditMiddleware : IMiddleware
 {
     public async Task InvokeAsync(HttpContext context, RequestDelegate next)
     {
-        // (opcjonalnie) pomiń swagger i inne techniczne trasy
         var path = context.Request.Path.Value ?? "";
         if (path.StartsWith("/swagger", StringComparison.OrdinalIgnoreCase) ||
             path.StartsWith("/_debug", StringComparison.OrdinalIgnoreCase))
@@ -19,7 +18,6 @@ public sealed class AuditMiddleware : IMiddleware
             return;
         }
 
-        // CorrelationId (z nagłówka albo generujemy)
         var correlationId =
             context.Request.Headers.TryGetValue("X-Correlation-Id", out var cid) &&
             !string.IsNullOrWhiteSpace(cid)
@@ -38,7 +36,6 @@ public sealed class AuditMiddleware : IMiddleware
         var ip = context.Connection.RemoteIpAddress?.ToString();
         var ua = context.Request.Headers.UserAgent.ToString();
 
-        // ✅ TWORZYSZ LOG RAZ
         var auditLog = new AuditLog(
             userId: userId,
             userEmail: userEmail,
@@ -51,8 +48,6 @@ public sealed class AuditMiddleware : IMiddleware
             userAgent: ua,
             correlationId: correlationId
         );
-
-        // ✅ DOPIERO TERAZ UDOSTĘPNIASZ ID
         context.Items["AuditLogId"] = auditLog.Id;
         context.Items["CorrelationId"] = auditLog.CorrelationId;
 
