@@ -238,21 +238,30 @@ realistic admin UI, not just CRUD forms
 It is intended as a portfolio project for backend / fullstack roles.
 
 📸 Screenshots
+
 Audit Logs
+
 Login
 ![alt text](image-1.png)
+
 Audit Page
 ![alt text](image.png)
+
 Demo Ping
 ![alt text](image-2.png)
+
 Demo Fail
 ![alt text](image-3.png)
+
 Demo AdminOnly
 ![alt text](image-4.png)
+
 Log Details
 ![alt text](image-5.png)
+
 Log Columns
 ![alt text](image-6.png)
+
 Column Selection
 ![alt text](image-7.png)
 
@@ -260,17 +269,23 @@ Audit Events
 
 Audit Events Page
 ![alt text](image-8.png)
+
 Audit Events Details
 ![alt text](image-9.png)
+
 Audit Events
 ![alt text](image-10.png)
 
 🧠 Possible extensions (not implemented)
 
 Saved filters per user
+
 Export to CSV / JSON
+
 Pagination / infinite scroll
+
 External application ingestion
+
 Real-time updates (SignalR)
 
 👤 Author
