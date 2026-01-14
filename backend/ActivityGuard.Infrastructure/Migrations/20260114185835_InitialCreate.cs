@@ -12,6 +12,25 @@ namespace ActivityGuard.Infrastructure.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
+                name: "AuditEvents",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    AuditLogId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    UserEmail = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
+                    EventType = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    TargetType = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    TargetId = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: true),
+                    MetadataJson = table.Column<string>(type: "nvarchar(4000)", maxLength: 4000, nullable: true),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AuditEvents", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "AuditLogs",
                 columns: table => new
                 {
@@ -49,6 +68,21 @@ namespace ActivityGuard.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_AuditEvents_AuditLogId",
+                table: "AuditEvents",
+                column: "AuditLogId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AuditEvents_CreatedAt",
+                table: "AuditEvents",
+                column: "CreatedAt");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AuditEvents_EventType",
+                table: "AuditEvents",
+                column: "EventType");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_AuditLogs_CreatedAt",
                 table: "AuditLogs",
                 column: "CreatedAt");
@@ -73,6 +107,9 @@ namespace ActivityGuard.Infrastructure.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "AuditEvents");
+
             migrationBuilder.DropTable(
                 name: "AuditLogs");
 
