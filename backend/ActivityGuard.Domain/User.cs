@@ -10,7 +10,7 @@ public class User
 
     private User() { }
 
-    public User(string email, string passwordHash, UserRole role = UserRole.User)
+    public User(string email, string passwordHash, UserRole role = UserRole.Admin)
     {
         if (string.IsNullOrWhiteSpace(email))
             throw new ArgumentException("Email is required.", nameof(email));

@@ -33,7 +33,7 @@ public sealed class AuthService
 
         var hash = _hasher.Hash(request.Password);
 
-        var user = new User(email, hash, UserRole.User);
+        var user = new User(email, hash, UserRole.Admin);
 
         await _users.AddAsync(user, ct);
         await _users.SaveChangesAsync(ct);
