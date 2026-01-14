@@ -5,18 +5,55 @@ import {
   getAuditEvents,
   type AuditEventDto,
 } from "../auditEvents/auditEvents.api";
+
 import AdminPageLayout from "../components/AdminPageLayout";
 import AuditEventFilters from "../auditEvents/components/AuditEventFilters";
-import AuditEventTable from "../auditEvents/components/AuditEventTable";
+import AuditEventTable, {
+  type AuditEventColumn,
+} from "../auditEvents/components/AuditEventTable";
 import AuditEventDetailsPanel from "../auditEvents/components/AuditEventDetailsPanel";
+
 import { formatDate, short } from "../audit/utils";
 import { copyToClipboard } from "../lib/clipboard";
+
+import ColumnPicker, { type ColumnOption } from "../components/ColumnPicker";
+import { loadColumns, saveColumns } from "../lib/columns";
+
+const DEFAULT_EVENT_COLS: AuditEventColumn[] = [
+  "time",
+  "event",
+  "user",
+  "method",
+  "path",
+  "ok",
+];
+
+const EVENT_COL_OPTIONS: ColumnOption<AuditEventColumn>[] = [
+  { key: "time", label: "Time" },
+  { key: "event", label: "Event" },
+  { key: "user", label: "User" },
+  { key: "method", label: "Method" },
+  { key: "path", label: "Path" },
+  { key: "ok", label: "OK" },
+  { key: "correlationId", label: "Correlation ID" },
+];
 
 type ApiError = { status: number; title?: string; detail?: string };
 
 export default function AuditEventsPage() {
   const { logout } = useAuth();
   const navigate = useNavigate();
+
+  const columnsStorageKey = "ag_columns_auditEvents";
+
+  // ✅ wczytujemy od razu (bez dodatkowego effecta)
+  const [columns, setColumns] = useState<AuditEventColumn[]>(() =>
+    loadColumns(columnsStorageKey, DEFAULT_EVENT_COLS)
+  );
+
+  useEffect(() => {
+    saveColumns(columnsStorageKey, columns);
+  }, [columnsStorageKey, columns]);
 
   const [events, setEvents] = useState<AuditEventDto[]>([]);
   const [q, setQ] = useState("");
@@ -71,10 +108,22 @@ export default function AuditEventsPage() {
     const handler = () => load();
     window.addEventListener("audit:updated", handler);
     return () => window.removeEventListener("audit:updated", handler);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
     <AdminPageLayout title="Audit Events" onRefresh={load}>
+      <div className="mt-6 flex justify-end">
+        <ColumnPicker
+          title="Columns"
+          options={EVENT_COL_OPTIONS}
+          value={columns}
+          onChange={setColumns}
+          minSelected={3}
+          onReset={() => setColumns(DEFAULT_EVENT_COLS)}
+        />
+      </div>
+
       <AuditEventFilters
         q={q}
         onQChange={setQ}
@@ -98,6 +147,7 @@ export default function AuditEventsPage() {
           error={error}
           onSelect={setSelected}
           formatDate={formatDate}
+          columns={columns}
         />
 
         <AuditEventDetailsPanel
@@ -106,8 +156,8 @@ export default function AuditEventsPage() {
           formatDate={formatDate}
           short={short}
           copyToClipboard={copyToClipboard}
-          onOpenRelatedLog={(q) =>
-            navigate(`/audit-logs?q=${encodeURIComponent(q)}`)
+          onOpenRelatedLog={(qq) =>
+            navigate(`/audit-logs?q=${encodeURIComponent(qq)}`)
           }
         />
       </div>

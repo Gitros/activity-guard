@@ -5,17 +5,44 @@ import { getAuditLogs, type AuditLogDto } from "../audit/audit.api";
 import { formatDate, short } from "../audit/utils";
 import { copyToClipboard } from "../lib/clipboard";
 import AuditFilters from "../audit/components/AuditFilters";
-import AuditTable from "../audit/components/AuditTable";
+import AuditTable, {
+  type AuditLogColumn,
+} from "../audit/components/AuditTable";
 import AuditDetailsPanel from "../audit/components/AuditDetailsPanel";
 import AdminPageLayout from "../components/AdminPageLayout";
+import ColumnPicker, { type ColumnOption } from "../components/ColumnPicker";
+import { loadColumns, saveColumns } from "../lib/columns";
+
+const DEFAULT_COLS: AuditLogColumn[] = [
+  "time",
+  "user",
+  "method",
+  "path",
+  "status",
+  "ok",
+];
+
+const COL_OPTIONS: ColumnOption<AuditLogColumn>[] = [
+  { key: "time", label: "Time" },
+  { key: "user", label: "User" },
+  { key: "method", label: "Method" },
+  { key: "path", label: "Path" },
+  { key: "correlationId", label: "Correlation ID" },
+  { key: "status", label: "Status" },
+  { key: "ok", label: "OK" },
+];
 
 type ApiError = { status: number; title?: string; detail?: string };
 
 export default function AuditLogsPage() {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
 
   const { logout } = useAuth();
-  const navigate = useNavigate();
+
+  const columnsStorageKey = "ag_columns_auditLogs";
+
+  const [columns, setColumns] = useState<AuditLogColumn[]>(DEFAULT_COLS);
 
   const [logs, setLogs] = useState<AuditLogDto[]>([]);
   const [q, setQ] = useState(() => searchParams.get("q") ?? "");
@@ -40,6 +67,7 @@ export default function AuditLogsPage() {
         success: successParam,
         take: 100,
       });
+
       setLogs(data);
       setSelected((prev) => {
         if (!prev) return data[0] ?? null;
@@ -61,16 +89,39 @@ export default function AuditLogsPage() {
     }
   }
 
+  // ✅ 1) przy zmianie userKey / storageKey wczytaj kolumny dla danego usera
+  useEffect(() => {
+    setColumns(loadColumns(columnsStorageKey, DEFAULT_COLS));
+  }, [columnsStorageKey]);
+
+  // ✅ 2) zapisuj zmiany kolumn do localStorage
+  useEffect(() => {
+    saveColumns(columnsStorageKey, columns);
+  }, [columnsStorageKey, columns]);
+
+  // ✅ 3) initial load + auto-refresh po demo actions
   useEffect(() => {
     load();
 
     const handler = () => load();
     window.addEventListener("audit:updated", handler);
     return () => window.removeEventListener("audit:updated", handler);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
     <AdminPageLayout title="Audit Logs" onRefresh={load}>
+      <div className="mt-6 flex justify-end">
+        <ColumnPicker
+          title="Columns"
+          options={COL_OPTIONS}
+          value={columns}
+          onChange={setColumns}
+          minSelected={3}
+          onReset={() => setColumns(DEFAULT_COLS)}
+        />
+      </div>
+
       <AuditFilters
         q={q}
         onQChange={setQ}
@@ -83,7 +134,6 @@ export default function AuditLogsPage() {
         }}
       />
 
-      {/* Content */}
       <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_360px]">
         <AuditTable
           logs={logs}
@@ -92,9 +142,9 @@ export default function AuditLogsPage() {
           error={error}
           onSelect={setSelected}
           formatDate={formatDate}
+          columns={columns}
         />
 
-        {/* DETAILS PANEL */}
         <AuditDetailsPanel
           selected={selected}
           onClear={() => setSelected(null)}
